@@ -4,31 +4,39 @@ from math import radians
 def main():
     wnd = Window("Flight Sim", Vector2(800, 600))
 
-    cube = load_mesh("assets/models/cube.obj")
-    lit = Shader("assets/shaders/lit.vert", "assets/shaders/lit.frag")
+    aircraft = load_mesh("assets/models/aircraft.obj")
+    ground = load_mesh("assets/models/plane.obj")
+    lit = Shader("assets/shaders/unlit.vert", "assets/shaders/unlit.frag")
 
     camera = Camera(wnd, radians(60), 1, 100)
-    camera.transform.position.z = -5
 
-    plane_trans = Transform()
-    plane_trans.scale.x = 2
+    ground_trans = Transform()
+    ground_trans.position.y -= 50
+    ground_trans.scale *= 100000
 
-    lightPos = Vector3(-10, 1000, 0)
+    aircraft_trans = Transform()
+    aircraft_trans.position.z = -8
+
+    lightPos = Vector3(-100, 1000, 1000)
+    lightColor = Vector3(1, 1, 1)
 
     while not wnd.should_close():
         dt = wnd.tick(60)
         wnd.poll_events()
 
+        aircraft_trans.rotation.y += dt
+
         wnd.clear(Vector3(135/255, 206/255, 235/255))
 
         lit.use()
-        lit.pass_mat4("mvp", camera.get_mvp(plane_trans))
-        lit.pass_mat4("model", plane_trans.get_trans_matrix())
-        lit.pass_vec3("lightPos", lightPos)
-        lit.pass_vec3("viewPos", camera.transform.position),
-        lit.pass_vec3("lightColor", Vector3(1, 1, 1))
+
+        lit.pass_mat4("mvp", camera.get_mvp(ground_trans))
+        lit.pass_vec3("fragColor", Vector3(1/255, 50/255, 32/255))
+        ground.draw()
+
+        lit.pass_mat4("mvp", camera.get_mvp(aircraft_trans))
         lit.pass_vec3("fragColor", Vector3(1, 1, 1))
-        cube.draw()
+        aircraft.draw()
 
         wnd.swap_buf()
 
